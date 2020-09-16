@@ -40,7 +40,12 @@ fp-ts/
 time : mornig, lunch, evening -> 각기 다른 모델을 사용  
 
 HDONG_CD : 동(지역)코드  
-flow_pop : 유동인구  
+flow_pop : 유동인구    
+
+​	├── flow_trend : 유동인구의 추세 변화  
+
+​	└── flow_cycle : 유동인구의 진동(주간)  
+
 card_use : 카드 사용량  
 weekday : 요일  
 holiday : 공휴일 (0,1)  
@@ -65,6 +70,8 @@ AREA : 지역 면적
 
 ### data _split
 
+![](https://github.com/deagwon97/image_src/blob/master/img/time_notime_data_split.png?raw=true)
+
 ├── train_data  
 │ 	├── 시간 : 2019년 2월 ~ 5월, 2020년 2월 ~ -40일 까지  
 │	 └── 지역 : (55개)    
@@ -77,4 +84,34 @@ AREA : 지역 면적
 		├── 시간 : - 20일 ~ -1일  
 		└── 지역 : (7개)  
 
+## [model]
 
+│  
+
+├── morning model  
+
+│ 	└──  flow_pop  = flow_trend + flow_cycle
+
+│         ├── trend_model
+
+│         └──  cycle_model
+
+│
+
+├── lunch model    
+
+│ 	└──  flow_pop  = flow_trend + flow_cycle
+
+│         ├── trend_model
+
+│         └──  cycle_model
+
+│
+
+└─ evening model     
+
+  	└──  flow_pop  = flow_trend + flow_cycle
+
+​          ├── trend_model
+
+​          └──  cycle_model
