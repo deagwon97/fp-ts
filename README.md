@@ -2,6 +2,7 @@
 predict floating population in time series.
 
 ## [Linux Tree]
+
 fp-ts/  
 │  
 ├── data/  #.gitignore  
@@ -85,6 +86,8 @@ AREA : 지역 면적
 		└── 지역 : (7개)  
 
 ## [model]
+
+![](https://github.com/deagwon97/image_src/blob/master/img/time_series_model.png?raw=true)
 
 │  
 
