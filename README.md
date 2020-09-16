@@ -28,7 +28,7 @@ fp-ts/
   
 
 ## [data description]
-<data>
+### data
 
 ├── morning  
 
@@ -36,7 +36,7 @@ fp-ts/
 
 └── evening  
 
-<time data>
+### time data
 time : mornig, lunch, evening -> 각기 다른 모델을 사용  
 
 HDONG_CD : 동(지역)코드  
@@ -52,9 +52,9 @@ day of years (?)
 
 
 
-<non time data>
+### non time data
 
-time :  mornig, lunch, evening -> 각기 다른 모델을 사용  
+time :  mornig, lunch, evening -> 각기 다른 모델을 사용    
 
 HDONG_CD : 동(지역)코드  
 tot_pop : 지역 평균 유동인구  
@@ -63,7 +63,7 @@ AREA : 지역 면적
 
 
 
-<data _split>
+### data _split
 
 ├── train_data  
 │ 	├── 시간 : 2019년 2월 ~ 5월, 2020년 2월 ~ -40일 까지  
