@@ -94,7 +94,7 @@ AREA : 지역 면적
 
 │         ├── trend_model
 
-│         └──  cycle_model
+│         └──  cycle_model  
 
 │
 
@@ -108,7 +108,7 @@ AREA : 지역 면적
 
 │
 
-└─ evening model     
+└── evening model     
 
   	└──  flow_pop  = flow_trend + flow_cycle
 
