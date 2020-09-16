@@ -1,2 +1,2 @@
-# fp_ts
+# fp-ts
 model predict floating population in time series.
