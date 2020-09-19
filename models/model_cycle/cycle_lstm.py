@@ -46,9 +46,17 @@ class LSTMModel_cycle(nn.Module):
             torch.zeros(1, x_time.size(0), self.hidden_size).to(device),
             torch.zeros(1, x_time.size(0), self.hidden_size).to(device)
         )
+        #print(hidden.shape)
         
-        out_time, _ = self.lstm(x_time, hidden)
-        out_time = self.time_fc(out_time[:, -7:, :])#
+        out_time, hidden = self.lstm(x_time, hidden)
+        #print(out_time.shape())
+        #print(hidden.shape())
+        
+
+        #out_time, hidden = self.lstm(out_time, hidden)
+        #out_time, hidden = self.lstm(out_time, hidden)
+        print(out_time.shape)
+        out_time = self.time_fc(out_time[:, -1, :])#
         
         # no_time part
         out_no_time = self.no_time_fc(x_no_time)
