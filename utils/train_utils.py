@@ -9,6 +9,7 @@ def plot_predict(train_x, train_y, train_pred,
         plt.figure(figsize = (15, 3))
         
         plt.subplot(1,2,1)
+        import numpy as np
         plt.plot(np.arange(20), train_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
                 marker = 'o', color = 'black', label = 'True_input')
         plt.plot(np.arange(21,28), train_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],

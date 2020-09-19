@@ -88,12 +88,11 @@ def df2npy(time_data):
     return time_data
 
 def scaleing_time(data, scaler = None):
-    
     shape = data.shape
     data = data.reshape(-1, shape[-1])
     if scaler == None:
         scaler = StandardScalerSelect()
-        scaler.fit(data)
+        scaler.fit(data[int(data.shape[0]/5*4):])###################################
     scaled_data = scaler.transform(data)
     return scaler, scaled_data.reshape(shape)
 
@@ -103,13 +102,12 @@ def scaleing_no_time(data, scaler = None):
     data = data.values
     if scaler == None:
         scaler = StandardScalerSelect()
-        scaler.fit(data)
+        scaler.fit(data[int(data.shape[0]/5*4):])###################################
     data = scaler.transform(data)
     data = pd.DataFrame(data, index = df_index, columns = df_columns)
     return scaler, data
 
-
-def split_train_valid_test(time_data):
+def split_train_valid_test(time_data, scaler = None):
     # make_random 
     loc_index = [i for i in range(69)]
     random.seed(1015)
@@ -128,7 +126,10 @@ def split_train_valid_test(time_data):
     test_loc_index = list(set(test_time_2[:,0,0].astype(np.int64)))
 
     #scaling - time # 지역별 스케일링
-    time_scaler, train_time[:,:,2:] = scaleing_time(train_time[:,:,2:])
+    if scaler == None:
+        time_scaler, train_time[:,:,2:] = scaleing_time(train_time[:,:,2:])
+    else:
+        time_scaler, train_time[:,:,2:] = scaleing_time(train_time[:,:,2:], scaler)
     _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], time_scaler)
     _, valid_time_2[:,:,2:] = scaleing_time(valid_time_2[:,:,2:], time_scaler)
     _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], time_scaler)
