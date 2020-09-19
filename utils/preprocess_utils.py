@@ -92,7 +92,12 @@ def scaleing_time(data, scaler = None):
     data = data.reshape(-1, shape[-1])
     if scaler == None:
         scaler = StandardScalerSelect()
-        scaler.fit(data[int(data.shape[0]/5*4):])###################################
+        
+        data_idx = np.arange(len(data))
+        np.random.seed(1015)
+        np.random.shuffle(data_idx)
+        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])###################################
+
     scaled_data = scaler.transform(data)
     return scaler, scaled_data.reshape(shape)
 
@@ -102,7 +107,13 @@ def scaleing_no_time(data, scaler = None):
     data = data.values
     if scaler == None:
         scaler = StandardScalerSelect()
-        scaler.fit(data[int(data.shape[0]/5*4):])###################################
+
+        data_idx = np.arange(len(data))
+        np.random.seed(1015)
+        np.random.shuffle(data_idx)
+        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])###################################
+    
+    
     data = scaler.transform(data)
     data = pd.DataFrame(data, index = df_index, columns = df_columns)
     return scaler, data
