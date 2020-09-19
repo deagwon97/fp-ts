@@ -9,13 +9,14 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset,DataLoader
 import torch.optim as optim
 torch.manual_seed(1015)
+# define 'device' to upload tensor in gpu
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
-class LSTMModel_trend(nn.Module):
+class LSTMModel_cycle(nn.Module):
     def __init__(self, input_size, hidden_size, no_time_size):
 
         # time model
-        super(LSTMModel_trend, self).__init__()
+        super(LSTMModel_cycle, self).__init__()
         self.hidden_size = hidden_size
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.time_fc = nn.Linear(hidden_size, 1)

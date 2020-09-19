@@ -9,6 +9,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset,DataLoader
 import torch.optim as optim
 torch.manual_seed(1015)
+# define 'device' to upload tensor in gpu
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class LSTMModel_trend(nn.Module):
