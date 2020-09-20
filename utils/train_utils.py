@@ -2,6 +2,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset,DataLoader
+import torch.optim as optim
+torch.manual_seed(1015)
+from models.model_cycle.cycle_lstm import LSTMModel_cycle
+# define 'device' to upload tensor in gpu
+#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+
 def plot_predict(train_x, train_y, train_pred,
                     valid_x, valid_y, valid_pred, plot_numbers = 10):
     for i in range(plot_numbers):

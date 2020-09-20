@@ -44,13 +44,12 @@ class LSTMModel_trend(nn.Module):
         out_time, _ = self.lstm(x_time, hidden)
 
         out_time = self.time_fc(out_time[:, -7:, :])#
-        
+        '''
         # no_time part
         out_no_time = self.no_time_fc(x_no_time)
         
         # merge part
         out_no_time = out_no_time.view((-1,7,1))
-        
         out = torch.cat((out_time, out_no_time), 1)
         
         out = out.view(-1,14)
@@ -58,3 +57,5 @@ class LSTMModel_trend(nn.Module):
         out = self.merge_fc(out)
         
         return out.view(-1,7)
+        '''
+        return out_time

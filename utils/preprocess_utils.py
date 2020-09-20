@@ -17,7 +17,7 @@ FEATURE_SIZE = 13
 #set window size
 INPUT_WINDOW = 20
 OUTPUT_WINDOW = 7
-ROLLSIZE = 7
+#ROLLSIZE = 14
 # set constant
 LOC_SIZE = 69
 TIME_SIZE = 3
@@ -26,7 +26,7 @@ FEATURE_SIZE = 13
 #set window size
 INPUT_WINDOW = 20
 OUTPUT_WINDOW = 7
-ROLLSIZE = 7
+ROLLSIZE = 21
 
 class StandardScalerSelect(StandardScaler):
     def __init__(self, copy=True, with_mean=True, with_std=True):
@@ -126,9 +126,9 @@ def split_train_valid_test(time_data, scaler = None):
 
     # split time data
     train_time = time_data[loc_index[ :55], :201, :]
-    valid_time_1 = time_data[loc_index[ :55], 201 -INPUT_WINDOW : -20, :] # train 지역& valid 기간
-    valid_time_2 = time_data[loc_index[55:62], : -20, :] # valid 지역 & (train + valid) 기간
-    test_time_1 = time_data[loc_index[:62], 221 -INPUT_WINDOW : , :] # train,valid 지역& test 기간
+    valid_time_1 = time_data[loc_index[ :55], 201 -INPUT_WINDOW -ROLLSIZE: -20, :] # train 지역& valid 기간
+    valid_time_2 = time_data[loc_index[55:62], : -20 - ROLLSIZE, :] # valid 지역 & (train + valid) 기간
+    test_time_1 = time_data[loc_index[:62], 221 -INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
     test_time_2 = time_data[loc_index[62:], :, :] # test 지역 & (train + valid + test) 기간
 
     # set loc index
