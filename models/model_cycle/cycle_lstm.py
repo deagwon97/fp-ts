@@ -1,3 +1,4 @@
+
 import numpy as np
 import warnings
 warnings.filterwarnings(action='ignore')
@@ -35,67 +36,60 @@ class LSTMModel_cycle(nn.Module):
         )
 
         self.time_fc_d1 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d2 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d3 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d4 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d5 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d6 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
         self.time_fc_d7 = nn.Sequential(
-            nn.Linear(hidden_size, 16),
+            nn.Linear(hidden_size+2, 16),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 8),
+            nn.Linear(16, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(8, 4),
-            nn.ReLU(inplace=True),
-            nn.Linear(4, 1)
+            nn.Linear(4, 1),
+            nn.ReLU(inplace=True)
         )
 
         self.merge_fc = nn.Sequential(
@@ -110,6 +104,15 @@ class LSTMModel_cycle(nn.Module):
 
     def forward(self, x_time, x_no_time):
         # time part
+        #  x_time의 12개 채널 정보
+        # 'card_use', 'holiday', 'day_corona',
+        #  'ondo', 'subdo', 'rain_snow',
+        #  'dayofyear_sin', 'dayofyear_cos', 'weekday_sin', 'weekday_cos'
+        #  'flow_trend', flow_cycle'
+
+        next_week  = x_time[:,-7:,-4:-2] 
+        # 예측하는 시점으로 부터 7일전 ~ 오늘 까지의 요일 정보는
+        # 다음주의 요일 정보돠 동일
         hidden = (
             torch.zeros(1, x_time.size(0), self.hidden_size).to(device),
             torch.zeros(1, x_time.size(0), self.hidden_size).to(device)
@@ -128,6 +131,10 @@ class LSTMModel_cycle(nn.Module):
         for _ in range(6):
             tomorrow, _ = self.lstm_decode(pred)
             pred = torch.cat((pred, tomorrow[:,-1,:].view([-1, 1, self.hidden_size])), 1)
+        #print(pred.shape)
+        next_week  = x_time[:,-7:,-4:-2]
+        pred = torch.cat((pred, next_week), 2) # pred 각 요일별로 요일 정보 추가
+
 
         out_1 = self.time_fc_d1(pred[:, 0, :])
         out_2 = self.time_fc_d2(pred[:, 1, :])
