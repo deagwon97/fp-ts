@@ -97,7 +97,6 @@ def scaleing_time(data, scaler = None):
         np.random.seed(1015)
         np.random.shuffle(data_idx)
         scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])###################################
-
     scaled_data = scaler.transform(data)
     return scaler, scaled_data.reshape(shape)
 
@@ -111,8 +110,7 @@ def scaleing_no_time(data, scaler = None):
         data_idx = np.arange(len(data))
         np.random.seed(1015)
         np.random.shuffle(data_idx)
-        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])###################################
-    
+        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])################################### 
     
     data = scaler.transform(data)
     data = pd.DataFrame(data, index = df_index, columns = df_columns)
@@ -125,28 +123,49 @@ def split_train_valid_test(time_data, scaler = None):
     random.shuffle(loc_index)
 
     # split time data
-    train_time = time_data[loc_index[ :55], :201, :]
-    valid_time_1 = time_data[loc_index[ :55], 201 -INPUT_WINDOW -ROLLSIZE: -20, :] # train 지역& valid 기간
-    valid_time_2 = time_data[loc_index[55:62], : -20 - ROLLSIZE, :] # valid 지역 & (train + valid) 기간
+    # 0일 ~ 119일 -> 19년
+    # 120일 ~ -> 20년
+    train_time_19 = time_data[loc_index[ :55], : 119, :]
+    train_time_20 = time_data[loc_index[ :55], (119 - ROLLSIZE) : (201), :]
+
+    valid_time_1 = time_data[loc_index[ :55], (201 -INPUT_WINDOW - ROLLSIZE) : (-20), :] # train 지역& valid 기간
+    
+    valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
+    valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
+    
     test_time_1 = time_data[loc_index[:62], 221 -INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
-    test_time_2 = time_data[loc_index[62:], :, :] # test 지역 & (train + valid + test) 기간
+    
+    test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
+    test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
 
     # set loc index
-    train_loc_index = list(set(train_time[:,0,0].astype(np.int64)))
-    valid_loc_index = list(set(valid_time_2[:,0,0].astype(np.int64)))
-    test_loc_index = list(set(test_time_2[:,0,0].astype(np.int64)))
+    train_loc_index = list(set(train_time_19[:,0,0].astype(np.int64)))
+    valid_loc_index = list(set(valid_time_2_19[:,0,0].astype(np.int64)))
+    test_loc_index = list(set(test_time_2_19[:,0,0].astype(np.int64)))
 
     #scaling - time # 지역별 스케일링
+    #scaling - time # 지역별 스케일링
+    train_time = time_data[loc_index[ :55], : 201, 2:]
     if scaler == None:
-        time_scaler, train_time[:,:,2:] = scaleing_time(train_time[:,:,2:])
+        time_scaler, _ = scaleing_time(train_time)
+        _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], time_scaler)
+        _, train_time_20[:,:,2:] = scaleing_time(train_time_20[:,:,2:], time_scaler)
     else:
-        time_scaler, train_time[:,:,2:] = scaleing_time(train_time[:,:,2:], scaler)
-    _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], time_scaler)
-    _, valid_time_2[:,:,2:] = scaleing_time(valid_time_2[:,:,2:], time_scaler)
-    _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], time_scaler)
-    _, test_time_2[:,:,2:] = scaleing_time(test_time_2[:,:,2:], time_scaler)
+        _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], scaler)
+        _, train_time_20[:,:,2:] = scaleing_time(train_time_20[:,:,2:], scaler)
+        time_scaler = scaler
 
-    train_valid_test = [train_time, valid_time_1, valid_time_2, test_time_1, test_time_2]
+
+    _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], time_scaler)
+    _, valid_time_2_19[:,:,2:] = scaleing_time(valid_time_2_19[:,:,2:], time_scaler)
+    _, valid_time_2_20[:,:,2:] = scaleing_time(valid_time_2_20[:,:,2:], time_scaler)
+    _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], time_scaler)
+    _, test_time_2_19[:,:,2:] = scaleing_time(test_time_2_19[:,:,2:], time_scaler)
+    _, test_time_2_20[:,:,2:] = scaleing_time(test_time_2_20[:,:,2:], time_scaler)
+
+    train_valid_test = [train_time_19, train_time_20,
+                         valid_time_1, valid_time_2_19, valid_time_2_20,
+                          test_time_1, test_time_2_19, test_time_2_20]
     train_valid_test_index = [train_loc_index, valid_loc_index, test_loc_index]
 
     return train_valid_test, train_valid_test_index, time_scaler
@@ -207,8 +226,28 @@ def append_trend_cycle(flow_pop, ROLLSIZE = ROLLSIZE):
     #print(new_flow_pop)
     return new_flow_pop
 
-def make_time_notime_data(time_data, notime_data, input_window = 20, out_window = 7):
-    x_time_batch, x_notime_batch, y_batch = list(), list(), list()
+def make_data(data_list, notime):
+    x_time_batch = []
+    x_notime_batch = []
+    y_time_batch = []
+    for data in data_list:
+        x_time, x_notime, y_time = make_time_notime_data(data, notime)
+        x_time_batch.append(x_time)
+        x_notime_batch.append(x_notime)
+        y_time_batch.append(y_time)
+        #print(x_time.shape)
+
+    x_time_batch = np.concatenate(x_time_batch)
+    x_notime_batch = np.concatenate(x_notime_batch)
+    y_time_batch = np.concatenate(y_time_batch)
+
+    print(x_time_batch.shape)
+    print(x_notime_batch.shape)
+    print(y_time_batch.shape)
+    
+    return x_time_batch, x_notime_batch, y_time_batch
+
+def make_time_notime_data(time_data, notime_data, input_window = 20, out_window = 7):    
 
     x_time = []
     x_notime = []
@@ -218,11 +257,9 @@ def make_time_notime_data(time_data, notime_data, input_window = 20, out_window 
         loc_code = time_data[loc,0,0]
         #print(time_data[loc_code,time_idx,0,0])
         x, y = split_sequence(time_data[loc,:,:], input_window, out_window)
-
         notime = notime_data.loc[loc_code]
         aug_notime = np.zeros([x.shape[0], notime.shape[0]])
         aug_notime[:,:] = notime
-        
         x_time.append(x)
         x_notime.append(aug_notime)
         y_time.append(y)
@@ -231,9 +268,9 @@ def make_time_notime_data(time_data, notime_data, input_window = 20, out_window 
     x_notime = np.concatenate(x_notime)
     y_time = np.concatenate(y_time)
     
-    print(x_time.shape)
-    print(x_notime.shape)
-    print(y_time.shape)
+    #print(x_time.shape)
+    #print(x_notime.shape)
+    #print(y_time.shape)
     
     return x_time.astype(np.float64), x_notime.astype(np.float64), y_time.astype(np.float64)
 

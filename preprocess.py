@@ -31,19 +31,19 @@ nontime_data = pd.read_csv('data/original/nontime_data.txt', sep = ' ')
 notime, no_time_scaler = split_notime_data(nontime_data, train_valid_test_loc_index)
 
 print('\n morning')
-m_train_time, m_train_notime, m_train_y = make_time_notime_data(morning_data[0], notime)
-m_valid_time, m_valid_notime, m_valid_y = make_time_notime_data(morning_data[1], notime)
-m_test_time, m_test_notime, m_test_y = make_time_notime_data(morning_data[2], notime)
+m_train_time, m_train_notime, m_train_y = make_data(morning_data[:2], notime)
+m_valid_time, m_valid_notime, m_valid_y = make_data(morning_data[2:5], notime)
+m_test_time, m_test_notime, m_test_y = make_data(morning_data[5:], notime)
 
 print('\n lunch')
-l_train_time, l_train_notime, l_train_y = make_time_notime_data(lunch_data[0], notime)
-l_valid_time, l_valid_notime, l_valid_y = make_time_notime_data(lunch_data[1], notime)
-l_test_time, l_test_notime, l_test_y = make_time_notime_data(lunch_data[2], notime)
+l_train_time, l_train_notime, l_train_y = make_data(lunch_data[:2], notime)
+l_valid_time, l_valid_notime, l_valid_y = make_data(lunch_data[2:5], notime)
+l_test_time, l_test_notime, l_test_y = make_data(lunch_data[5:], notime)
 
 print('\n evening')
-e_train_time, e_train_notime, e_train_y = make_time_notime_data(evening_data[0], notime)
-e_valid_time, e_valid_notime, e_valid_y = make_time_notime_data(evening_data[1], notime)
-e_test_time, e_test_notime, e_test_y = make_time_notime_data(evening_data[2], notime)
+e_train_time, e_train_notime, e_train_y = make_data(evening_data[:2], notime)
+e_valid_time, e_valid_notime, e_valid_y = make_data(evening_data[2:5], notime)
+e_test_time, e_test_notime, e_test_y = make_data(evening_data[5:], notime)
 
 
 m_data_list = [m_train_time[:,:,2:], m_train_notime, m_train_y, 
