@@ -11,6 +11,7 @@ from torch.utils.data import Dataset,DataLoader
 import torch.optim as optim
 torch.manual_seed(1015)
 from models.model_cycle.cycle_lstm import LSTMModel_cycle
+import random
 # define 'device' to upload tensor in gpu
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -19,7 +20,8 @@ from models.model_cycle.cycle_lstm import LSTMModel_cycle
 def plot_predict(train_x, train_y, train_pred,
                     valid_x, valid_y, valid_pred, plot_numbers = 10):
     for i in range(plot_numbers):
-        i = i*11
+
+        i = random.randint(1,20) + i*11
         plt.figure(figsize = (15, 3))
         
         plt.subplot(1,2,1)
