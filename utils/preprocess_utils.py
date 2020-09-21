@@ -26,7 +26,7 @@ FEATURE_SIZE = 13
 #set window size
 INPUT_WINDOW = 20
 OUTPUT_WINDOW = 7
-ROLLSIZE = 21
+ROLLSIZE = 3
 
 class StandardScalerSelect(StandardScaler):
     def __init__(self, copy=True, with_mean=True, with_std=True):
@@ -217,11 +217,52 @@ def split_sequence(sequence, input_window = 20, output_window = 7, target_index 
 def seq2cycle(seq):
     return pd.Series(seq).rolling(ROLLSIZE).mean()
 
+def seq2cycle_weight(seq):
+    trend_x = np.zeros(seq.shape)
+    ROLLING = 3
+    for idx in range(ROLLING, len(seq) - (ROLLING)):
+        trend_x[idx] =  seq[idx- ROLLING]*1 +\
+                        seq[idx- ROLLING + 1]*2 +\
+                        seq[idx- ROLLING + 2]*3 +\
+                        seq[idx- ROLLING + 3]*4 +\
+                        seq[idx- ROLLING + 4]*3 +\
+                        seq[idx- ROLLING + 5]*2 +\
+                        seq[idx- ROLLING + 6]*1
+        trend_x[idx] =  trend_x[idx] / 16
+
+    idx = len(seq) -ROLLING
+    trend_x[idx] =  seq[idx- ROLLING]*1 +\
+                        seq[idx- ROLLING + 1]*2 +\
+                        seq[idx- ROLLING + 2]*4 +\
+                        seq[idx- ROLLING + 3]*4 +\
+                        seq[idx- ROLLING + 4]*3 +\
+                        seq[idx- ROLLING + 5]*2 
+    trend_x[idx] =  trend_x[idx] / 16
+        
+    idx = len(seq) -ROLLING + 1
+    trend_x[idx] =  seq[idx- ROLLING]*1 +\
+                        seq[idx- ROLLING + 1]*4 +\
+                        seq[idx- ROLLING + 2]*4 +\
+                        seq[idx- ROLLING + 3]*4 +\
+                        seq[idx- ROLLING + 4]*3
+    trend_x[idx] =  trend_x[idx] / 16    
+
+    idx = len(seq) -ROLLING + 2
+    trend_x[idx] =  seq[idx- ROLLING]*4 +\
+                        seq[idx- ROLLING + 1]*4 +\
+                        seq[idx- ROLLING + 2]*4 +\
+                        seq[idx- ROLLING + 3]*4
+    trend_x[idx] =  trend_x[idx] / 16
+    return trend_x
+
+
+
 def append_trend_cycle(flow_pop, ROLLSIZE = ROLLSIZE):
     # [(input_window + output_window + ROLLSIZE)]를 받아서 
     # [(input_window + output_window)]를 출력
     new_flow_pop = np.zeros([len(flow_pop) - ROLLSIZE, 2])
-    new_flow_pop[:, 0] = seq2cycle(flow_pop)[ROLLSIZE:]
+    #new_flow_pop[:, 0] = seq2cycle(flow_pop)[ROLLSIZE:]
+    new_flow_pop[:, 0] = seq2cycle_weight(flow_pop)[ROLLSIZE:]
     new_flow_pop[:, 1] = flow_pop[ROLLSIZE:] - new_flow_pop[:, 0]
     #print(new_flow_pop)
     return new_flow_pop
