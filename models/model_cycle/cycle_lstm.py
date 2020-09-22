@@ -1,4 +1,3 @@
-
 import numpy as np
 import warnings
 warnings.filterwarnings(action='ignore')
@@ -67,7 +66,7 @@ class LSTMModel_cycle(nn.Module):
         #x_time_2 = x_time[:,:,10:]
         #x_time = torch.cat((x_time_1,x_time_2),2)
 
-        out_time, _ = self.lstm(x_time, hidden)
+        out_time, _ = self.lstm(x_time)
         #out_time = self.dropout(out_time)
         #out_time, _ = self.lstm_up(out_time, hidden)
         #out_time의 shape : [batch, input_window_size, hidden_size]
@@ -84,4 +83,3 @@ class LSTMModel_cycle(nn.Module):
         
         #return out_time.view(-1,7) 
         return out.view(-1,7) 
-
