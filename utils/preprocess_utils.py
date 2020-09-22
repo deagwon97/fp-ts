@@ -96,7 +96,7 @@ def scaleing_time(data, scaler = None):
         data_idx = np.arange(len(data))
         np.random.seed(1015)
         np.random.shuffle(data_idx)
-        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])###################################
+        scaler.fit(data[:data_idx[int(data.shape[0]-1)]])###################################
     scaled_data = scaler.transform(data)
     return scaler, scaled_data.reshape(shape)
 
@@ -110,7 +110,7 @@ def scaleing_no_time(data, scaler = None):
         data_idx = np.arange(len(data))
         np.random.seed(1015)
         np.random.shuffle(data_idx)
-        scaler.fit(data[data_idx[int(data.shape[0]/5*4):]])################################### 
+        scaler.fit(data[:data_idx[int(data.shape[0])-1]])################################### 
     
     data = scaler.transform(data)
     data = pd.DataFrame(data, index = df_index, columns = df_columns)
@@ -125,27 +125,30 @@ def split_train_valid_test(time_data, scaler = None):
     # split time data
     # 0일 ~ 119일 -> 19년
     # 120일 ~ -> 20년
-    train_time_19 = time_data[loc_index[ :55], : 119, :]
-    train_time_20 = time_data[loc_index[ :55], (119 - ROLLSIZE) : (201), :]
+    train_time_19 = time_data[loc_index[ : 69], : 119, :]
+    train_time_20 = time_data[loc_index[ : 69], (119 - ROLLSIZE) : (201), :]
 
-    valid_time_1 = time_data[loc_index[ :55], (201 -INPUT_WINDOW - ROLLSIZE) : (-20), :] # train 지역& valid 기간
+    valid_time_1 = time_data[loc_index[ : 69], (201 -INPUT_WINDOW - ROLLSIZE) : (-20), :] # train 지역& valid 기간
     
-    valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
-    valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
+    #valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
+    #valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
     
-    test_time_1 = time_data[loc_index[:62], 221 -INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
+    test_time_1 = time_data[loc_index[ : 69], 221 -INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
     
-    test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
-    test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
+    #test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
+    #test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
 
     # set loc index
     train_loc_index = list(set(train_time_19[:,0,0].astype(np.int64)))
-    valid_loc_index = list(set(valid_time_2_19[:,0,0].astype(np.int64)))
-    test_loc_index = list(set(test_time_2_19[:,0,0].astype(np.int64)))
+    #valid_loc_index = list(set(valid_time_2_19[:,0,0].astype(np.int64)))
+    valid_loc_index = list(set(valid_time_1[:,0,0].astype(np.int64)))
+    #test_loc_index = list(set(test_time_2_19[:,0,0].astype(np.int64)))
+    test_loc_index = list(set(test_time_1[:,0,0].astype(np.int64)))
 
     #scaling - time # 지역별 스케일링
     #scaling - time # 지역별 스케일링
-    train_time = time_data[loc_index[ :55], : 201, 2:]
+    train_time = time_data[loc_index[ : 69], : 201, 2:] ## 전부 샘플링
+
     if scaler == None:
         time_scaler, _ = scaleing_time(train_time)
         _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], time_scaler)
@@ -157,15 +160,17 @@ def split_train_valid_test(time_data, scaler = None):
 
 
     _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], time_scaler)
-    _, valid_time_2_19[:,:,2:] = scaleing_time(valid_time_2_19[:,:,2:], time_scaler)
-    _, valid_time_2_20[:,:,2:] = scaleing_time(valid_time_2_20[:,:,2:], time_scaler)
+    #_, valid_time_2_19[:,:,2:] = scaleing_time(valid_time_2_19[:,:,2:], time_scaler)
+    #_, valid_time_2_20[:,:,2:] = scaleing_time(valid_time_2_20[:,:,2:], time_scaler)
     _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], time_scaler)
-    _, test_time_2_19[:,:,2:] = scaleing_time(test_time_2_19[:,:,2:], time_scaler)
-    _, test_time_2_20[:,:,2:] = scaleing_time(test_time_2_20[:,:,2:], time_scaler)
+    #_, test_time_2_19[:,:,2:] = scaleing_time(test_time_2_19[:,:,2:], time_scaler)
+    #_, test_time_2_20[:,:,2:] = scaleing_time(test_time_2_20[:,:,2:], time_scaler)
 
     train_valid_test = [train_time_19, train_time_20,
-                         valid_time_1, valid_time_2_19, valid_time_2_20,
-                          test_time_1, test_time_2_19, test_time_2_20]
+                         valid_time_1,
+                         # valid_time_2_19, valid_time_2_20,
+                          test_time_1]
+                          # test_time_2_19, test_time_2_20]
     train_valid_test_index = [train_loc_index, valid_loc_index, test_loc_index]
 
     return train_valid_test, train_valid_test_index, time_scaler
@@ -187,7 +192,8 @@ def split_notime_data(nontime_data, train_valid_test_index):
     _,              test_no_time  = scaleing_no_time(test_no_time)
 
     notime = [train_no_time, valid_no_time, test_no_time]
-    return pd.concat(notime), no_time_scaler
+    #return pd.concat(notime), no_time_scaler
+    return train_no_time, no_time_scaler
 
 def split_sequence(sequence, input_window = 20, output_window = 7, target_index  = 2):
     x, y = list(), list()
@@ -271,6 +277,10 @@ def make_data(data_list, notime):
     x_time_batch = []
     x_notime_batch = []
     y_time_batch = []
+
+    if len(data_list) != 2:
+        data_list = [data_list]
+
     for data in data_list:
         x_time, x_notime, y_time = make_time_notime_data(data, notime)
         x_time_batch.append(x_time)
@@ -293,7 +303,6 @@ def make_time_notime_data(time_data, notime_data, input_window = 20, out_window 
     x_time = []
     x_notime = []
     y_time = []
-
     for loc in range(time_data.shape[0]):
         loc_code = time_data[loc,0,0]
         #print(time_data[loc_code,time_idx,0,0])
@@ -326,6 +335,13 @@ def numpy2tensor(data_list):
     for data in data_list:
         tensor_list.append(torch.FloatTensor(data).to(device))
     return tensor_list
+
+def append_cycle_size(data_list):
+    for tr_va_te in [0,3,6]:
+        cycle_size = data_list[0+tr_va_te][:,:,-1].max(axis = 1) - data_list[0+tr_va_te][:,:,-1].min(axis = 1)
+        data_list[1+tr_va_te] = np.concatenate([data_list[1+tr_va_te], cycle_size.reshape(-1,1)], axis = 1)
+    return data_list
+
 
 
 def tensor2numpy(data_list):

@@ -19,11 +19,16 @@ class LSTMModel_cycle(nn.Module):
         super(LSTMModel_cycle, self).__init__()
         self.hidden_size = hidden_size
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
-        #self.lstm_up = nn.LSTM(hidden_size, hidden_size, batch_first=True)
+        self.gru = nn.GRU(input_size, hidden_size, batch_first= True)
+        self.lstm_up = nn.LSTM(hidden_size, hidden_size, batch_first=True)
 
-        self.time_fc = nn.Sequential(
+        self.time_fc_gru = nn.Sequential(
             nn.Linear(hidden_size, 1)
         )
+        self.time_fc_lstm = nn.Sequential(
+            nn.Linear(hidden_size, 1)
+        )
+
         self.dropout = nn.Dropout(p=0.2)
         # no time model
         self.no_time_fc = nn.Sequential(
@@ -37,7 +42,7 @@ class LSTMModel_cycle(nn.Module):
         )
 
         # merge model
-        self.merge_fc = nn.Sequential(
+        self.merge_fc_lstm = nn.Sequential(
             nn.Linear(7, 14),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.2),
@@ -49,6 +54,17 @@ class LSTMModel_cycle(nn.Module):
             nn.Linear(14,7)
         )
 
+        self.merge_fc_gru = nn.Sequential(
+            nn.Linear(7, 14),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.2),
+            nn.Linear(14, 14),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.2),
+            nn.Linear(14, 14),
+            nn.ReLU(inplace=True),
+            nn.Linear(14,7)
+        )
 
     def forward(self, x_time, x_no_time):
         # time part
@@ -58,28 +74,26 @@ class LSTMModel_cycle(nn.Module):
         # 'dayofyear_sin', 'dayofyear_cos', 'weekday_sin', 'weekday_cos',
         # 'flow_trend', flow_cycle'
         # time part
-        hidden = (
-            torch.zeros(1, x_time.size(0), self.hidden_size).to(device),
-            torch.zeros(1, x_time.size(0), self.hidden_size).to(device)
-        )
-        #x_time_1 = x_time[:,:,:8]
         #x_time_2 = x_time[:,:,10:]
         #x_time = torch.cat((x_time_1,x_time_2),2)
 
-        out_time, _ = self.lstm(x_time)
         #out_time = self.dropout(out_time)
-        #out_time, _ = self.lstm_up(out_time, hidden)
+        out_time_lstm, _ = self.lstm(x_time)
+
+
         #out_time의 shape : [batch, input_window_size, hidden_size]
-        out_time = self.time_fc(out_time[:, -7:, :])#
+        out_time_lstm = self.time_fc_lstm(out_time_lstm[:, -7:, :])
 
         # no_time part
         out_no_time = self.no_time_fc(x_no_time)
 
         # merge part
         out_no_time = out_no_time.view((-1,1,1))
-        out = out_time * out_no_time
-        out = out.view(-1,7)      
-        out = self.merge_fc(out)
+        out_lstm = out_time_lstm * out_no_time
+   
+        out_lstm = out_lstm.view(-1,7)     
+
+        out_lstm = self.merge_fc_lstm(out_lstm)
         
         #return out_time.view(-1,7) 
-        return out.view(-1,7) 
+        return out_lstm.view(-1,7) 
