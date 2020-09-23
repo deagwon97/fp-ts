@@ -14,17 +14,14 @@ LOC_SIZE = 69
 TIME_SIZE = 3
 DATE_SIZE = 241
 FEATURE_SIZE = 13
-#set window size
-INPUT_WINDOW = 20
-OUTPUT_WINDOW = 7
-#ROLLSIZE = 14
+
 # set constant
 LOC_SIZE = 69
 TIME_SIZE = 3
 DATE_SIZE = 241
 FEATURE_SIZE = 13
 #set window size
-INPUT_WINDOW = 20
+INPUT_WINDOW = 21
 OUTPUT_WINDOW = 7
 ROLLSIZE = 3
 
@@ -125,15 +122,15 @@ def split_train_valid_test(time_data, scaler = None):
     # split time data
     # 0일 ~ 119일 -> 19년
     # 120일 ~ -> 20년
-    train_time_19 = time_data[loc_index[ : 69], : 119, :]
-    train_time_20 = time_data[loc_index[ : 69], (119 - ROLLSIZE) : (201), :]
+    train_time_19 = time_data[loc_index[ : 69], : 119 + ROLLSIZE, :]
+    train_time_20 = time_data[loc_index[ : 69], (119 - INPUT_WINDOW - ROLLSIZE) : (-40 + ROLLSIZE), :]
 
-    valid_time_1 = time_data[loc_index[ : 69], (201 -INPUT_WINDOW - ROLLSIZE) : (-20), :] # train 지역& valid 기간
+    valid_time_1 = time_data[loc_index[ : 69], (-40 - INPUT_WINDOW - ROLLSIZE) : (-20) + ROLLSIZE, :] # train 지역& valid 기간
     
     #valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
     #valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
     
-    test_time_1 = time_data[loc_index[ : 69], 221 -INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
+    test_time_1 = time_data[loc_index[ : 69], 221 - INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
     
     #test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
     #test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
@@ -195,27 +192,28 @@ def split_notime_data(nontime_data, train_valid_test_index):
     #return pd.concat(notime), no_time_scaler
     return train_no_time, no_time_scaler
 
-def split_sequence(sequence, input_window = 20, output_window = 7, target_index  = 2):
+def split_sequence(sequence, input_window = INPUT_WINDOW, output_window = OUTPUT_WINDOW, target_index  = 2):
     x, y = list(), list()
     #print(sequence.shape)
     for day in range(ROLLSIZE, sequence.shape[0] - ROLLSIZE):
-        start_idx = day - ROLLSIZE
+        start_idx = day
         cut_idx = day + input_window
         end_idx = day + input_window + output_window
 
-        if end_idx > (len(sequence)) -1:#
+        if end_idx + ROLLSIZE > (len(sequence)) -1:#
             break
-        seq_x_y = sequence[start_idx  : end_idx, :]
-        
-        # trend cycle 추출
-        # [(output_window + ROLLSIZE), -1]를 받아서 
-        # [(output_window), -1]를 출력
-        trend_cycle = append_trend_cycle(seq_x_y[:,2])# 2번이 유동인구 일때
-        seq_x_y = seq_x_y[ROLLSIZE:,3:]# hdong, time, flow_pop columns 제거
-        seq_x_y = np.concatenate([seq_x_y, trend_cycle], axis = 1)
-        # input_x, output_y 로 split
-        seq_x = seq_x_y[:input_window, :]
-        seq_y = seq_x_y[input_window:, -2:]# -2는 trend, -1은 cycle
+        # input_seires (x)
+        ###
+        seq_x = sequence[start_idx  - ROLLSIZE : cut_idx, :]
+        trend_cycle_x = append_trend_cycle(seq_x[:,target_index])
+        seq_x = np.concatenate([seq_x[ROLLSIZE:,3:],
+                                trend_cycle_x[ROLLSIZE:]], axis = 1)
+        ###
+        seq_y = sequence[cut_idx - ROLLSIZE : end_idx  + ROLLSIZE, :]
+        trend_cycle_y = append_trend_cycle(seq_y[:,target_index])
+        seq_y = trend_cycle_y[ROLLSIZE:-ROLLSIZE,:]
+        ###
+
         x.append(seq_x)
         y.append(seq_y)
     return np.array(x), np.array(y)
@@ -223,10 +221,27 @@ def split_sequence(sequence, input_window = 20, output_window = 7, target_index 
 def seq2cycle(seq):
     return pd.Series(seq).rolling(ROLLSIZE).mean()
 
+
+def seq2cycle_knn(seq):
+    trend_x = np.zeros(seq.shape)
+    ROLLING = 3
+    for idx in range(ROLLING, (len(seq)-1) + (-ROLLING+1)):
+        trend_x[idx] =  seq[idx- ROLLING : idx- ROLLING + 6 + 1].mean()
+
+    idx = (len(seq)-1) +(-ROLLING+1)
+    trend_x[idx] =  seq[idx- ROLLING-1 : idx- ROLLING + 5 + 1].mean()
+        
+    idx = (len(seq)-1) +(-ROLLING+2)
+    trend_x[idx] =  seq[idx- ROLLING-2 : idx- ROLLING + 4 + 1].mean()  
+
+    idx = (len(seq)-1)+(-ROLLING + 3)
+    trend_x[idx] =  seq[idx- ROLLING-3 : idx- ROLLING + 3 + 1].mean()
+    return trend_x
+
 def seq2cycle_weight(seq):
     trend_x = np.zeros(seq.shape)
     ROLLING = 3
-    for idx in range(ROLLING, len(seq) - (ROLLING)):
+    for idx in range(ROLLING, (len(seq)-1) + (-ROLLING+1)):
         trend_x[idx] =  seq[idx- ROLLING]*1 +\
                         seq[idx- ROLLING + 1]*2 +\
                         seq[idx- ROLLING + 2]*3 +\
@@ -236,7 +251,7 @@ def seq2cycle_weight(seq):
                         seq[idx- ROLLING + 6]*1
         trend_x[idx] =  trend_x[idx] / 16
 
-    idx = len(seq) -ROLLING
+    idx = (len(seq)-1) +(-ROLLING+1)
     trend_x[idx] =  seq[idx- ROLLING]*1 +\
                         seq[idx- ROLLING + 1]*2 +\
                         seq[idx- ROLLING + 2]*4 +\
@@ -245,7 +260,7 @@ def seq2cycle_weight(seq):
                         seq[idx- ROLLING + 5]*2 
     trend_x[idx] =  trend_x[idx] / 16
         
-    idx = len(seq) -ROLLING + 1
+    idx = (len(seq)-1) +(-ROLLING+2)
     trend_x[idx] =  seq[idx- ROLLING]*1 +\
                         seq[idx- ROLLING + 1]*4 +\
                         seq[idx- ROLLING + 2]*4 +\
@@ -253,7 +268,7 @@ def seq2cycle_weight(seq):
                         seq[idx- ROLLING + 4]*3
     trend_x[idx] =  trend_x[idx] / 16    
 
-    idx = len(seq) -ROLLING + 2
+    idx = (len(seq)-1)+(-ROLLING + 3)
     trend_x[idx] =  seq[idx- ROLLING]*4 +\
                         seq[idx- ROLLING + 1]*4 +\
                         seq[idx- ROLLING + 2]*4 +\
@@ -263,13 +278,13 @@ def seq2cycle_weight(seq):
 
 
 
-def append_trend_cycle(flow_pop, ROLLSIZE = ROLLSIZE):
+def append_trend_cycle(flow_pop):
     # [(input_window + output_window + ROLLSIZE)]를 받아서 
     # [(input_window + output_window)]를 출력
-    new_flow_pop = np.zeros([len(flow_pop) - ROLLSIZE, 2])
+    new_flow_pop = np.zeros([len(flow_pop), 2])
     #new_flow_pop[:, 0] = seq2cycle(flow_pop)[ROLLSIZE:]
-    new_flow_pop[:, 0] = seq2cycle_weight(flow_pop)[ROLLSIZE:]
-    new_flow_pop[:, 1] = flow_pop[ROLLSIZE:] - new_flow_pop[:, 0]
+    new_flow_pop[:, 0] = seq2cycle_weight(flow_pop)
+    new_flow_pop[:, 1] = flow_pop - new_flow_pop[:, 0]
     #print(new_flow_pop)
     return new_flow_pop
 
@@ -298,7 +313,7 @@ def make_data(data_list, notime):
     
     return x_time_batch, x_notime_batch, y_time_batch
 
-def make_time_notime_data(time_data, notime_data, input_window = 20, out_window = 7):    
+def make_time_notime_data(time_data, notime_data, input_window = INPUT_WINDOW, out_window = OUTPUT_WINDOW):    
 
     x_time = []
     x_notime = []
