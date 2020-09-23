@@ -44,3 +44,20 @@ def plot_predict(train_x, train_y, train_pred,
         plt.title('validation')
         plt.legend()
         plt.show()
+
+
+def plot_test_predict(train_x, train_y, train_pred):
+    plt.figure(figsize = (10, 10))
+    for i in range(4):
+        i = random.randint(1,21) + i*11
+        plt.subplot(2,2,i+1)
+        import numpy as np
+        plt.plot(np.arange(21), train_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
+                marker = 'o', color = 'black', label = 'True_input')
+        plt.plot(np.arange(22,29), train_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
+                marker = 'o', color = 'red', label = 'True_output', alpha = 0.5)
+        plt.plot(np.arange(22,29),train_pred[i],    #.cpu().detach().numpy()[i],
+                color = 'blue', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
+        plt.title('train')
+        plt.legend()
+        plt.show()
