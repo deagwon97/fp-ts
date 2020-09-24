@@ -357,6 +357,11 @@ def append_cycle_size(data_list):
         data_list[1+tr_va_te] = np.concatenate([data_list[1+tr_va_te], cycle_size.reshape(-1,1)], axis = 1)
     return data_list
 
+def append_trend_size(data_list):
+    for tr_va_te in [0,3,6]:
+        cycle_size = data_list[0+tr_va_te][:,:,-2].max(axis = 1) - data_list[0+tr_va_te][:,:,-2].min(axis = 1)
+        data_list[1+tr_va_te] = np.concatenate([data_list[1+tr_va_te], cycle_size.reshape(-1,1)], axis = 1)
+    return data_list
 
 
 def tensor2numpy(data_list):

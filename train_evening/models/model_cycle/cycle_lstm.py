@@ -12,6 +12,48 @@ torch.manual_seed(1015)
 # define 'device' to upload tensor in gpu
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+'''
+class LSTMModel_cycle(nn.Module):
+    def __init__(self, input_size, hidden_size, no_time_size):
+        super(LSTMModel_cycle, self).__init__()
+        self.hidden_size = hidden_size
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.time_fc = nn.Sequential(
+            nn.Linear(hidden_size, 1)
+        )
+        self.dropout = nn.Dropout(p=0.2)
+        # no time model
+        self.no_time_fc = nn.Sequential(
+            nn.Linear(no_time_size,6),
+            nn.ReLU(inplace=True),
+            nn.Linear(6,6),
+            nn.ReLU(inplace=True),
+            nn.Linear(6,1)
+        )
+        self.merge_fc = nn.Sequential(
+            nn.Linear(7, 14),
+            nn.Linear(14,7)
+        )
+
+
+    def forward(self, x_time, x_no_time):
+        out_time, _ = self.lstm(x_time)
+
+        out_time = self.time_fc(out_time[:, -7:, :])#
+        # no_time part
+        out_no_time = self.no_time_fc(x_no_time)
+        out_no_time = out_no_time.view((-1,1,1))
+        out = out_time * out_no_time
+
+        out = out.view(-1,7)      
+        out = self.merge_fc(out)
+        #return out_time.view(-1,7) 
+        return out.view(-1,7) 
+
+
+
+
+'''
 class LSTMModel_cycle(nn.Module):
     def __init__(self, input_size, hidden_size, no_time_size):
 
@@ -45,13 +87,9 @@ class LSTMModel_cycle(nn.Module):
         self.dropout = nn.Dropout(p=0.2)
         # no time model
         self.no_time_fc = nn.Sequential(
-            nn.Linear(no_time_size,16),
+            nn.Linear(no_time_size, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(16,16),
-            nn.ReLU(inplace=True),
-            nn.Linear(16,8),
-            nn.ReLU(inplace=True),
-            nn.Linear(8,1)
+            nn.Linear(4,1)
         )
 
         # merge model
@@ -68,12 +106,7 @@ class LSTMModel_cycle(nn.Module):
         )
 
         self.merge_fc_gru = nn.Sequential(
-            nn.Linear(7, 14),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=0.2),
-            nn.Linear(14, 14),
-            nn.ReLU(inplace=True),
-            nn.Linear(14,7)
+            nn.Linear(7, 7)
         )
 
     def forward(self, x_time, x_no_time):
@@ -85,11 +118,6 @@ class LSTMModel_cycle(nn.Module):
         # 'dayofyear_sin', 'dayofyear_cos', 'weekday_sin', 'weekday_cos',
         # 'flow_trend', flow_cycle'
         # time part
-        #x_time_2 = x_time[:,:,10:]
-        #x_time = torch.cat((x_time_1,x_time_2),2)
-
-        #out_time = self.dropout(out_time)
-        #out_time_lstm, _ = self.lstm(x_time)\
         out_time_lstm_week1, _ = self.lstm(x_time[:,   :7 , :])
         out_time_lstm_week2, _ = self.lstm(x_time[:, 7 :14, :])
         out_time_lstm_week3, _ = self.lstm(x_time[:, 14:  , :])
@@ -116,7 +144,7 @@ class LSTMModel_cycle(nn.Module):
    
         out = out.view(-1,7)     
 
-        #out = self.merge_fc_lstm(out)
+        #out = self.merge_fc_gru(out)
          
         #return out_time.view(-1,7) 
         return out
