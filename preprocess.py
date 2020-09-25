@@ -46,17 +46,17 @@ e_valid_time, e_valid_notime, e_valid_y = make_data(evening_data[2], notime)
 e_test_time, e_test_notime, e_test_y = make_data(evening_data[3], notime)
 
 
-m_data_list = [m_train_time[:,:,2:], m_train_notime, m_train_y, 
-                m_valid_time[:,:,2:], m_valid_notime, m_valid_y,
-                m_test_time[:,:,2:], m_test_notime, m_test_y]
+m_data_list = [m_train_time[:,:,:], m_train_notime, m_train_y, 
+                m_valid_time[:,:,:], m_valid_notime, m_valid_y,
+                m_test_time[:,:,:], m_test_notime, m_test_y]
 
-l_data_list = [l_train_time[:,:,2:], l_train_notime, l_train_y, 
-                l_valid_time[:,:,2:], l_valid_notime, l_valid_y,
-                l_test_time[:,:,2:], l_test_notime, l_test_y]
+l_data_list = [l_train_time[:,:,:], l_train_notime, l_train_y, 
+                l_valid_time[:,:,:], l_valid_notime, l_valid_y,
+                l_test_time[:,:,:], l_test_notime, l_test_y]
 
-e_data_list = [e_train_time[:,:,2:], e_train_notime, e_train_y, 
-                e_valid_time[:,:,2:], e_valid_notime, e_valid_y,
-                e_test_time[:,:,2:], e_test_notime, e_test_y]    
+e_data_list = [e_train_time[:,:,:], e_train_notime, e_train_y, 
+                e_valid_time[:,:,:], e_valid_notime, e_valid_y,
+                e_test_time[:,:,:], e_test_notime, e_test_y]    
 
 data_list =  [np.concatenate([m_train_time[:,:,2:], l_train_time[:,:,2:], e_train_time[:,:,2:]]),
                 np.concatenate([m_train_notime, l_train_notime, e_train_notime]),

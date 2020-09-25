@@ -279,8 +279,6 @@ def seq2cycle_weight(seq):
 
 
 def append_trend_cycle(flow_pop):
-    # [(input_window + output_window + ROLLSIZE)]를 받아서 
-    # [(input_window + output_window)]를 출력
     new_flow_pop = np.zeros([len(flow_pop), 2])
     #new_flow_pop[:, 0] = seq2cycle(flow_pop)[ROLLSIZE:]
     new_flow_pop[:, 0] = seq2cycle_weight(flow_pop)

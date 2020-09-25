@@ -117,6 +117,7 @@ class LSTMModel_cycle(nn.Module):
         # 'ondo', 'subdo', 'rain_snow',
         # 'dayofyear_sin', 'dayofyear_cos', 'weekday_sin', 'weekday_cos',
         # 'flow_trend', flow_cycle'
+        
         # time part
         out_time_lstm_week1, _ = self.lstm(x_time[:,   :7 , :])
         out_time_lstm_week2, _ = self.lstm(x_time[:, 7 :14, :])
