@@ -85,9 +85,13 @@ def plot_test_predict(test_x, test_y, test_pred):
         plt.legend(loc='lower left')
     plt.show()
 
-
-time = pd.read_csv('../data/original/time_data.txt', sep = ' ')
-nontime = pd.read_csv('../data/original/nontime_data.txt', sep = ' ')
+try:
+    time = pd.read_csv('../data/original/time_data.txt', sep = ' ')
+    nontime = pd.read_csv('../data/original/nontime_data.txt', sep = ' ')
+except:
+    time = pd.read_csv('data/original/time_data.txt', sep = ' ')
+    nontime = pd.read_csv('data/original/nontime_data.txt', sep = ' ')
+    
 day_list = time.STD_YMD.unique()
 def train_idx2day(idx, train_len):
     day_len = int(train_len//69)
