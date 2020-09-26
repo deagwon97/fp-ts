@@ -58,17 +58,6 @@ e_data_list = [e_train_time[:,:,:], e_train_notime, e_train_y,
                 e_valid_time[:,:,:], e_valid_notime, e_valid_y,
                 e_test_time[:,:,:], e_test_notime, e_test_y]    
 
-data_list =  [np.concatenate([m_train_time[:,:,2:], l_train_time[:,:,2:], e_train_time[:,:,2:]]),
-                np.concatenate([m_train_notime, l_train_notime, e_train_notime]),
-                np.concatenate([m_train_y, l_train_y, e_train_y]),
-                np.concatenate([m_valid_time[:,:,2:], l_valid_time[:,:,2:], e_valid_time[:,:,2:]]),
-                np.concatenate([m_valid_notime, l_valid_notime, e_valid_notime]),
-                np.concatenate([m_valid_y, l_valid_y, e_valid_y]),
-                np.concatenate([m_test_time[:,:,2:], l_test_time[:,:,2:], e_test_time[:,:,2:]]),
-                np.concatenate([m_test_notime, l_test_notime, e_test_notime]),
-                np.concatenate([m_test_y, l_test_y, e_test_y])]
-
-
 path = 'data/preprocess/'
 with open(path + 'm_data_list.pkl', 'wb') as f:
     pickle.dump(m_data_list, f)
@@ -76,9 +65,6 @@ with open(path + 'l_data_list.pkl', 'wb') as f:
     pickle.dump(l_data_list, f)
 with open(path + 'e_data_list.pkl', 'wb') as f:
     pickle.dump(e_data_list, f)
-
-with open(path +'full_data_list.pkl', 'wb') as f:
-    pickle.dump(data_list, f)
 
 
 scalers = [m_time_scaler, l_time_scaler, e_time_scaler, no_time_scaler]

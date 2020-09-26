@@ -89,7 +89,6 @@ def scaleing_time(data, scaler = None):
     data = data.reshape(-1, shape[-1])
     if scaler == None:
         scaler = StandardScalerSelect()
-        
         data_idx = np.arange(len(data))
         np.random.seed(1015)
         np.random.shuffle(data_idx)
@@ -122,16 +121,14 @@ def split_train_valid_test(time_data, scaler = None):
     # split time data
     # 0일 ~ 119일 -> 19년
     # 120일 ~ -> 20년
-    train_time_19 = time_data[loc_index[ : 69], : 119 + ROLLSIZE, :]
-    train_time_20 = time_data[loc_index[ : 69], (119 - INPUT_WINDOW - ROLLSIZE) : (-40 + ROLLSIZE), :]
-
+    train_time_19 = time_data[loc_index[ : 69], : 119, :]
+    train_time_20 = time_data[loc_index[ : 69], (119) : (-40 + ROLLSIZE), :]
     valid_time_1 = time_data[loc_index[ : 69], (-40 - INPUT_WINDOW - ROLLSIZE) : (-20) + ROLLSIZE, :] # train 지역& valid 기간
     
     #valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
     #valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
     
     test_time_1 = time_data[loc_index[ : 69], 221 - INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
-    
     #test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
     #test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
 

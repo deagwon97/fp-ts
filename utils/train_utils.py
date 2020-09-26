@@ -26,21 +26,21 @@ def plot_predict(train_x, train_y, train_pred,
         plt.subplot(1,2,1)
         import numpy as np
         plt.plot(np.arange(21), train_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
-                marker = 'o', color = 'black', label = 'True_input')
+                marker = 'o', color = 'black', label = 'True_input')# 검정
         plt.plot(np.arange(22,29), train_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
-                marker = 'o', color = 'red', label = 'True_output', alpha = 0.5)
+                marker = 'o', color = '#BD434D', label = 'True_output', alpha = 0.5) #빨강
         plt.plot(np.arange(22,29),train_pred[i],    #.cpu().detach().numpy()[i],
-                color = 'blue', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
-        plt.title('train')
+                color = '#5A87B9', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5) # 파랑
+        plt.title('Train')
         plt.legend()
 
         plt.subplot(1,2,2)
         plt.plot(np.arange(21), valid_x[i,:],
                 marker = 'o', color = 'black', label = 'True_input')
         plt.plot(np.arange(22,29), valid_y[i],
-                marker = 'o', color = 'red', label = 'True_output', alpha = 0.5)
+                marker = 'o', color = '#BD434D', label = 'True_output', alpha = 0.5)
         plt.plot(np.arange(22,29), valid_pred[i],
-                color = 'blue', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
+                color = '#5A87B9', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
         plt.title('validation')
         plt.legend()
         plt.show()
@@ -54,9 +54,9 @@ def plot_test_predict(train_x, train_y, train_pred):
         plt.plot(np.arange(21), train_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
                 marker = 'o', color = 'black', label = 'True_input')
         plt.plot(np.arange(22,29), train_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
-                marker = 'o', color = 'red', label = 'True_output', alpha = 0.5)
+                marker = 'o', color = '#BD434D', label = 'True_output', alpha = 0.5)
         plt.plot(np.arange(22,29),train_pred[i],    #.cpu().detach().numpy()[i],
-                color = 'blue', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
+                color = '#5A87B9', label = 'Predict', marker = 'x', ls = '--', alpha = 0.5)
         plt.title('test')
         plt.legend()
     plt.show()
