@@ -121,14 +121,16 @@ def split_train_valid_test(time_data, scaler = None):
     # split time data
     # 0일 ~ 119일 -> 19년
     # 120일 ~ -> 20년
-    train_time_19 = time_data[loc_index[ : 69], : 119, :]
-    train_time_20 = time_data[loc_index[ : 69], (119) : (-40 + ROLLSIZE+ OUTPUT_WINDOW), :]
-    valid_time_1 = time_data[loc_index[ : 69], (-40 - INPUT_WINDOW - ROLLSIZE) : (-20) + ROLLSIZE + OUTPUT_WINDOW, :] # train 지역& valid 기간
+    train_time_19 = time_data[loc_index[ : 69], : 120, :]
+    train_time_20 = time_data[loc_index[ : 69], 120 : 201, :]
+
+    
+    valid_time_1 = time_data[loc_index[ : 69], (201 - (INPUT_WINDOW + ROLLSIZE*2 + OUTPUT_WINDOW - 1) ) : 221, :] # train 지역& valid 기간
     
     #valid_time_2_19 = time_data[loc_index[55:62], : 119, :]
     #valid_time_2_20 = time_data[loc_index[55:62], (119 - ROLLSIZE) : -20, :] # valid 지역 & (train + valid) 기간
     
-    test_time_1 = time_data[loc_index[ : 69], 221 - INPUT_WINDOW - ROLLSIZE : , :] # train,valid 지역& test 기간
+    test_time_1 = time_data[loc_index[ : 69], 221- (INPUT_WINDOW + ROLLSIZE*2 + OUTPUT_WINDOW-1) : , :] # train,valid 지역& test 기간
     #test_time_2_19 = time_data[loc_index[62:], :119, :] # test 지역 & (train + valid + test) 기간
     #test_time_2_20 = time_data[loc_index[62:], (119 - ROLLSIZE):, :]
 
@@ -191,12 +193,12 @@ def split_notime_data(nontime_data, train_valid_test_index):
 def split_sequence(sequence, input_window = INPUT_WINDOW, output_window = OUTPUT_WINDOW, target_index  = 2):
     x, y = list(), list()
     #print(sequence.shape)
-    for day in range(ROLLSIZE, sequence.shape[0] - ROLLSIZE):
+    for day in range(ROLLSIZE, sequence.shape[0]):
         start_idx = day
         cut_idx = day + input_window
         end_idx = day + input_window + output_window
 
-        if end_idx + ROLLSIZE > (len(sequence)) -1:#
+        if end_idx + ROLLSIZE > (len(sequence)):#
             break
         # input_seires (x)
         ###
@@ -209,9 +211,9 @@ def split_sequence(sequence, input_window = INPUT_WINDOW, output_window = OUTPUT
         trend_cycle_y = append_trend_cycle(seq_y[:,target_index])
         seq_y = trend_cycle_y[ROLLSIZE:-ROLLSIZE,:]
         ###
-
         x.append(seq_x)
         y.append(seq_y)
+
     return np.array(x), np.array(y)
 
 def seq2cycle(seq):
@@ -369,43 +371,3 @@ def tensor2numpy(data_list):
         numpy_list.append(data.cpu().detach().numpy())
     return numpy_list
 
-
-
-time = pd.read_csv('../data/original/time_data.txt', sep = ' ')
-nontime = pd.read_csv('../data/original/nontime_data.txt', sep = ' ')
-day_list = time.STD_YMD.unique()
-
-def train_idx2day(idx, total_len):
-    day_len = int(total_len//69)
-    day_idx = idx % day_len
-    
-    if idx <= 84:
-        return day_list[day_idx + 24]
-    elif idx > 84:
-        return day_list[day_idx + 24 + 14]
-
-
-def valid_idx2day(idx):
-    idx = int(idx/69)
-    return day_list[idx + 201]
-
-def test_idx2day(idx):
-    idx = int(idx/69)
-    return day_list[idx + 221]
-code_list = time.HDONG_CD.unique()
-code2name = time.groupby('HDONG_CD')['HDONG_NM'].apply(lambda x :list(x)[0])
-
-def idx2dong(idx, total_len):
-    day_size = int(total_len/69)
-    idx = int(idx//day_size)
-    code = code_list[idx]
-    dong_name = code2name[code]
-    return dong_name
-
-def make_xticks(start_day):
-    start_idx = int(np.argwhere(day_list == start_day))
-    xticks = day_list[start_idx: start_idx + 28]
-    for i in range(len(xticks)):
-        if i%7 != 0:
-            xticks[i] = None
-    return xticks
