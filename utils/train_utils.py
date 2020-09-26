@@ -124,3 +124,18 @@ def make_xticks(start_day):
         if i%7 != 0:
             xticks[i] = None
     return xticks
+    
+def add_datas(data_list1, data_list2):
+    new_data = []
+    for i in range(len(data_list1)):
+        new_data.append(data_list1[i] + data_list2[i])
+    return new_data
+
+
+def rescale_data(data_list, scaler):
+    new_data_list = []
+    for data in data_list:
+        shape = data.shape
+        data = scaler.inverse_transform(data.reshape(-1), select_col = 0)
+        new_data_list.append(data.reshape(shape))
+    return new_data_list
