@@ -147,19 +147,18 @@ def split_train_valid_test(time_data, scaler = None):
     train_time = time_data[loc_index[ : 69], : 201, 2:] ## 전부 샘플링
 
     if scaler == None:
-        time_scaler, _ = scaleing_time(train_time)
-        _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], time_scaler)
-        _, train_time_20[:,:,2:] = scaleing_time(train_time_20[:,:,2:], time_scaler)
+        scaler, _ = scaleing_time(train_time)
+        _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], scaler) # 2이 flow_pop
+        _, train_time_20[:,:,2:] = scaleing_time(train_time_20[:,:,2:], scaler)
     else:
         _, train_time_19[:,:,2:] = scaleing_time(train_time_19[:,:,2:], scaler)
         _, train_time_20[:,:,2:] = scaleing_time(train_time_20[:,:,2:], scaler)
-        time_scaler = scaler
 
 
-    _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], time_scaler)
+    _, valid_time_1[:,:,2:] = scaleing_time(valid_time_1[:,:,2:], scaler)
     #_, valid_time_2_19[:,:,2:] = scaleing_time(valid_time_2_19[:,:,2:], time_scaler)
     #_, valid_time_2_20[:,:,2:] = scaleing_time(valid_time_2_20[:,:,2:], time_scaler)
-    _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], time_scaler)
+    _, test_time_1[:,:,2:] = scaleing_time(test_time_1[:,:,2:], scaler)
     #_, test_time_2_19[:,:,2:] = scaleing_time(test_time_2_19[:,:,2:], time_scaler)
     #_, test_time_2_20[:,:,2:] = scaleing_time(test_time_2_20[:,:,2:], time_scaler)
 
@@ -170,7 +169,7 @@ def split_train_valid_test(time_data, scaler = None):
                           # test_time_2_19, test_time_2_20]
     train_valid_test_index = [train_loc_index, valid_loc_index, test_loc_index]
 
-    return train_valid_test, train_valid_test_index, time_scaler
+    return train_valid_test, train_valid_test_index, scaler
 
 def split_notime_data(nontime_data, train_valid_test_index):
     train_loc_index, valid_loc_index, test_loc_index= train_valid_test_index
