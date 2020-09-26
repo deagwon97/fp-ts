@@ -69,7 +69,6 @@ class LSTMModel_cycle(nn.Module):
         self.time_fc_gru = nn.Sequential(
             nn.Linear(hidden_size, 1)
         )
-
         self.time_fc_week1 = nn.Sequential(
             nn.Linear(hidden_size, 1)
         )
@@ -89,24 +88,16 @@ class LSTMModel_cycle(nn.Module):
         self.no_time_fc = nn.Sequential(
             nn.Linear(no_time_size, 4),
             nn.ReLU(inplace=True),
-            nn.Linear(4,1)
+            nn.Linear(4,4)
+            #nn.ReLU(inplace=True)
         )
 
         # merge model
-        self.merge_fc_lstm = nn.Sequential(
-            nn.Linear(7, 14),
+        self.merge_fc = nn.Sequential(
+            nn.Linear(11, 11),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.2),
-            nn.Linear(14, 14),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=0.2),
-            nn.Linear(14, 14),
-            nn.ReLU(inplace=True),
-            nn.Linear(14,7)
-        )
+            nn.Linear(11, 7)
 
-        self.merge_fc_gru = nn.Sequential(
-            nn.Linear(7, 7)
         )
 
     def forward(self, x_time, x_no_time):
@@ -118,9 +109,18 @@ class LSTMModel_cycle(nn.Module):
         # 'dayofyear_sin', 'dayofyear_cos', 'weekday_sin', 'weekday_cos',
         # 'flow_trend', flow_cycle'
         # time part
-        out_time_lstm_week1, _ = self.lstm(x_time[:,   :7 , :])
-        out_time_lstm_week2, _ = self.lstm(x_time[:, 7 :14, :])
-        out_time_lstm_week3, _ = self.lstm(x_time[:, 14:  , :])
+        x = torch.tensor(x_time)
+        mini_cycle = torch.min((x_time[:,:,-1]),dim = 1)[0]
+        mini_cycle = mini_cycle.view(-1,1)
+        maxi_cycle = torch.max((x_time[:,:,-1]), dim = 1)[0]
+        maxi_cycle = maxi_cycle.view(-1,1)
+        
+        x[:,:,-1] = (x[:,:,-1] - mini_cycle)/(maxi_cycle-mini_cycle)
+        x[:,:,-1] = (x[:,:,-1] - mini_cycle)/(maxi_cycle-mini_cycle)
+
+        out_time_lstm_week1, _ = self.lstm(x[:,   :7 , :])
+        out_time_lstm_week2, _ = self.lstm(x[:, 7 :14, :])
+        out_time_lstm_week3, _ = self.lstm(x[:, 14:  , :])
 
         #out_time의 shape : [batch, input_window_size, hidden_size]
         out_time_lstm_week1 = self.time_fc_week1(out_time_lstm_week1)
@@ -130,21 +130,17 @@ class LSTMModel_cycle(nn.Module):
         out_time = self.week_merge(torch.cat((out_time_lstm_week1.view(-1,7,1),
                                                  out_time_lstm_week2.view(-1,7,1), 
                                                  out_time_lstm_week3.view(-1,7,1)), 2))
-
-
+        out_time = out_time.view(-1,7)
         # no_time part
-        out_no_time = self.no_time_fc(x_no_time)
-
-
+        out_no_time = self.no_time_fc(x_no_time).view(-1,4)
 
         # merge part
-        out_no_time = out_no_time.view(-1,1)
-        out_time = out_time.view(-1,7)
-        out = out_time * out_no_time
-   
-        out = out.view(-1,7)     
-
-        #out = self.merge_fc_gru(out)
-         
+        #out_no_time = out_no_time.view(-1,1)
+        #out_time = out_time.view(-1,7)
+        #out = out_time * out_no_time
+        out = torch.cat((out_time,out_no_time),1)    
+        out = self.merge_fc(out)
         #return out_time.view(-1,7) 
+
+        out = out *(maxi_cycle - mini_cycle) + mini_cycle
         return out

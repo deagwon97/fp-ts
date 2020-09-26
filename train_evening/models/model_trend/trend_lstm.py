@@ -33,11 +33,17 @@ class LSTMModel_trend(nn.Module):
         self.merge_fc = nn.Sequential(
             nn.Linear(11, 7),
             nn.ReLU(inplace=True),
-            nn.Linear(7, 7)
+            nn.Linear(7, 7),
+            nn.Sigmoid()
         )
     
     def forward(self, x_time, x_no_time):
         # time part
+        x = torch.tensor(x_time)
+        mini_trend = torch.min((x_time[:,:,-2]),dim = 1)[0]
+        mini_trend = mini_trend.view(-1,1)
+        maxi_trend = torch.max((x_time[:,:,-2]), dim = 1)[0]
+        maxi_trend = maxi_trend.view(-1,1)
         
         out_time, _ = self.lstm(x_time)
         out_time = self.time_fc(out_time[:, -7:, :])#
@@ -53,4 +59,5 @@ class LSTMModel_trend(nn.Module):
         out = out_time * out_no_time
         '''
         out = self.merge_fc(out)
+        out = out *(maxi_trend - mini_trend) + mini_trend
         return out
