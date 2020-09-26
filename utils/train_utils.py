@@ -69,7 +69,7 @@ def plot_test_predict(test_x, test_y, test_pred):
     plt.figure(figsize = (15, 7))
     for i in range(4):
         plt.subplot(2,2,i+1)
-        i = random.randint(1,21) + i*11
+        i = random.randint(1,len(test_x)-1)
         plt.plot(np.arange(21), test_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
                 marker = 'o', color = 'black', label = '입력 유동인구')
         plt.plot(np.arange(22,29), test_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
@@ -124,7 +124,7 @@ def make_xticks(start_day):
         if i%7 != 0:
             xticks[i] = None
     return xticks
-    
+
 def add_datas(data_list1, data_list2):
     new_data = []
     for i in range(len(data_list1)):
