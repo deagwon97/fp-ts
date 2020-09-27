@@ -1,5 +1,6 @@
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 
 
@@ -22,6 +23,38 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 # define 'device' to upload tensor in gpu
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+def plot_hist(train_error, valid_error, hist, ylim = 0.02):
+    plt.figure(figsize = [10, 5])
+    plt.plot(train_error, label = 'train_mse')
+    plt.plot(valid_error, label = 'valid_mse')
+
+    plt.axvline(hist['best_val_epoch'],
+                color = 'red', ls = 'dashed', label = f"best_val_epoch : {hist['best_val_epoch']} epochs")
+    plt.axhline(hist['best_val_error'],
+                color = 'red', ls = 'dashed', label = f"best_val_mse : {hist['best_val_error']:1.5f}")
+
+    plt.xticks(label = 'epochs')
+    plt.legend()
+    plt.ylim(0,ylim)
+    plt.show()
+
+def plot_models_valid_mse(model_valid_scores):
+    plt.figure(figsize=(10, 4))
+    splot=sns.barplot(x="model", y="validation_MSE", data=model_valid_scores, color = '#5A87B9')
+    plt.ylabel("validation_MSE",size=14)
+    plt.xlabel("model",size=14)
+    plt.xticks(fontsize = 13)
+    plt.yticks(fontsize = 13)
+    plt.title("6가지 모델의 검증 데이터 성능 비교", size=18)
+    for p in splot.patches:
+        splot.annotate(format(p.get_height(), '.4f'), 
+                       (p.get_x() + p.get_width() / 2., p.get_height()), 
+                       ha = 'center', va = 'center', 
+                       color = "white",
+                       size=15,
+                       xytext = (0, -12), 
+                       textcoords = 'offset points')
+    plt.show()
 
 
 def plot_predict(train_x, train_y, train_pred,
@@ -72,9 +105,9 @@ def plot_test_predict(test_x, test_y, test_pred):
         i = random.randint(1,len(test_x)-1)
         plt.plot(np.arange(21), test_x[i,:],   # m_train_time.cpu().detach().numpy()[i,:,-2],
                 marker = 'o', color = 'black', label = '입력 유동인구')
-        plt.plot(np.arange(22,29), test_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
+        plt.plot(np.arange(21,28), test_y[i],    #m_train_y[:,:,0].cpu().detach().numpy()[i],
                 marker = 'o', color = '#BD434D', label = '실제 유동인구')
-        plt.plot(np.arange(22,29),test_pred[i],    #.cpu().detach().numpy()[i],
+        plt.plot(np.arange(21,28),test_pred[i],    #.cpu().detach().numpy()[i],
                 color = '#5A87B9', label = '예측 유동인구', marker = 'x', ls = '--')
         for vline in range(4):
             plt.axvline(vline* 7 , color = '#E7825C', ls = '--')
