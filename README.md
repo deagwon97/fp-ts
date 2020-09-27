@@ -1,150 +1,108 @@
 # fp-ts
-predict floating population in time series.
+1. data/origianl/ 경로에 time_data, nontime_data 생성
+2.  preprocess.py 를 실행하여 모델 훈련을 위한 전처리 데이터를 생성한다. (6월 예측에 사용되는 데이터도 생성)
+3. train_morning 폴더 속morning_train_trend.ipynb, morning_train_cycle.ipynb , morning_total_fp.ipynb            파일을 차례대로 실행한다. ( #순서 주의# trend와 cycle이 생성된 후 total 유동인구 생성가능)
+4. 마찬가지로 train_lunch 폴더, train_evening 폴더를 실행한다.
 
 ## [Linux Tree]
 
 fp-ts/  
 │  
-├── data/  #.gitignore  
-│   ├── original/  
-│   └── preprocess/  
-│         ├── train.npy  
-│         ├── validation.npy  
-│         └── test.npy  
-│   
-├── models/  
-│   ├── lstm.py  
-│   ├── gru.py  
-│   └── xgboost.py  
+├── data/  #.gitignore       
+│   │      
+│   ├── original/    # 시계열 변수와 비 시계열 변수가 들어있는 폴더   
+│   │        ├── nontime_data.txt  
+│   │        └── time_data.txt       
+│   │   
+│   ├── predict_june/    # 완성된 모델로 6월의 예측을 위한 데이터를 보관하는 폴더  
+│   │   ├── predict_cycle_trend/ #완성된 모델의 6월 예측 결과   
+│   │   │    ├── june_morning_trend_pred.plk  
+│   │   │    ├── june_morning_cycle_pred.plk    
+│   │   │    ├── june_lunch_trend_pred.plk           
+│   │   │    ├── june_lunch_cycle_pred.plk  
+│   │   │    ├── june_evening_trend_pred.plk    
+│   │   │    └──  june_evening_cycle_pred.plk     
+│   │   │   
+│   │   ├── preprosess_june/ # 6월 예측을 위해 생성한 파일 preprocess.py를 통해 생성       
+│   │   │    ├── morning_june_time.plk  
+│   │   │    ├── morning_june_notime.plk    
+│   │   │    ├── lunch_june_time.plk  
+│   │   │    ├── lunch_june_notime.plk    
+│   │   │    ├── evening_june_time.plk  
+│   │   │    └──evening_june_notime.plk    
+│   │   │    
+│   │   └── result_june/ #6월 예측결과를 통해 만든 결과         
+│   │        ├── evening_inother.csv# 다른 동에 비해 유동인구가 붐비는 정도 1~5  
+│   │        ├──  evening_insame.csv# 같은지역 근 한 달 동안에 비해 유동인구가 붐비는 정도 1~5  
+│   │        ├──  lunch_inother.csv  
+│   │        ├── lunch_insame.csv  
+│   │        ├──  morning_inother.csv  
+│   │        └──  morning_insame.csv    
+│   │  
+│   ├── train_results/  # 모델 훈련 결과    
+│   │        ├── evening_results  # 저녁 데이터의 trend, cycle결과    
+│   │ 	   │     ├──  e_cycle_results_list.pkl  
+│   │        │     ├──  e_cycle_results_test.pkl  
+│   │   	 │     ├──  e_total_results_list.pkl #결합 후 최종 결과 
+│   │   	 │     ├──  e_total_results_test.pkl# test데이터 예측 결과  
+│   │    	│     ├──  e_trend_results_list.pkl  
+│   │        │     └──  e_trend_results_test.pkl     
+│   │        │    
+│   │        ├── lunch_results        
+│   │ 	   │     ├──  l_cycle_results_list.pkl  
+│   │        │     ├──  l_cycle_results_test.pkl  
+│   │   	 │     ├──  l_total_results_list.pkl  
+│   │   	 │     ├──  l_total_results_test.pkl  
+│   │    	│     ├──  l_trend_results_list.pkl  
+│   │        │     └──  l_trend_results_test.pkl     
+│   │        │      
+│   │        └── morning_results     
+│   │ 	          ├──  m_cycle_results_list.pkl  
+│   │               ├──  m_cycle_results_test.pkl  
+│   │   	        ├──  m_total_results_list.pkl  
+│   │   	        ├──  m_total_results_testpkl  
+│   │    	       ├──  m_trend_results_list.pkl  
+│   │               └──  m_trend_results_test.pkl     
+│   │                     
+│   └── preprocess/ # 모델 학습을 위해 전처리 한 결과 데이터, preprocess를 통해 생성  
+│             ├── m_data_list.plk  
+│             ├── l_data_list.plk    
+│             ├── e_data_list.plk           
+│             ├── l_data_list.plk  
+│             └── scalers.plk    
+│          
 │  
-├── preprocess.ipynb  
-├── train.ipynb  
-├── result_validation.ipynb  
+├── models/# 학습에 사용된 모델  
+│     ├── LSTM.py  
+│     ├── GRU.py     
+│     ├── LSTM_FC_trend.py  
+│     └── LSTM_FC_cycle.py  
 │  
-├── requirements.txt  
+├── preprocess.py # 학습을 위한 데이터 전처리 폴더  
+│      
+├── train_morning/     
+│     ├── best_model/       
+│      │        └── # 훈련된 6가지 모델의 결과.pkl   
+│      ├── morning_train_trend.ipynb     
+│      ├── morning_train_cycle.ipynb     
+│      └── morning_total_fp.ipynb     
+│    
+
+├── train_lunch/     
+│     ├── best_model/       
+│      │        └── # 훈련된 6가지 모델의 결과.pkl   
+│      ├── lunch_train_trend.ipynb     
+│      ├── lunch_train_cycle.ipynb      
+│      └── lunch_train_total_fp.ipynb    
+│ 
+├── train_evening/     
+│     ├── best_model/       
+│      │        └── # 훈련된 6가지 모델의 결과.pkl   
+│     ├── evening_train_trend.ipynb  
+│     ├── evening_train_cycle.ipynb      
+│     └── evening_total_fp.ipynb   
+│        
+├── predict_flow.zip  # 9개의 ipython파일의 출력을 html타입으로 저장   
+├── requirements.txt   
 ├── .gitignore  
-└── README.md 
-
-  
-
-## [data description]
-
-### data
-
-├── morning  
-├── lunch  
-└── evening  
-
-### time data
-time : mornig, lunch, evening -> 각기 다른 모델을 사용    
-
-HDONG_CD : 동(지역)코드  
-flow_pop : 유동인구    
-​	├── flow_trend : 유동인구의 추세 변화  
-​	└── flow_cycle : 유동인구의 진동(주간)  
-
-card_use : 카드 사용량  
-weekday : 요일  
-holiday : 공휴일 (0,1)  
-day_corona : 일별 신규  확진자  
-ondo : 온도  
-subdo : 습도  
-rain_snow : 강수량  
-day of years (?)   
-
-### non time data
-
-time :  mornig, lunch, evening -> 각기 다른 모델을 사용    
-
-HDONG_CD : 동(지역)코드  
-tot_pop : 지역 평균 유동인구  
-age_80U : 80세 이상 인구 비율  
-AREA : 지역 면적     
-
-
-
-### data _split
-
-![](https://github.com/deagwon97/image_src/blob/master/img/time_notime_data_split.png?raw=true)
-├── train_data  
-│ 	├── 시간 : 2019년 2월 ~ 5월, 2020년 2월 ~ -40일 까지  
-│	└── 지역 : (55개)    
-├── validation_data  
-│ 	├── 시간 : - 40일 ~ -20일  
-│ 	└── 지역 : (7개)  
-└─ test_data  
-		├── 시간 : - 20일 ~ -1일  
-		└── 지역 : (7개)  
-
-## [model]
-
-![](https://github.com/deagwon97/image_src/blob/master/img/time_series_model.png?raw=true)
-
-│  
-├── morning model  
-│ 	└──  flow_pop  = flow_trend + flow_cycle
-│     	    ├── trend_model
-│              └──  cycle_model  
-│
-├── lunch model    
-│ 	└──  flow_pop  = flow_trend + flow_cycle
-│      	     ├── trend_model
-│      	     └──  cycle_model
-│
-└── evening model     
-  	└──  flow_pop  = flow_trend + flow_cycle
-​          	     ├── trend_model
-​        	     └──  cycle_model
-
-## 프로세스 정리
-
-1. 모든 지역, 시간대의 정보를 담고 있는 table 데이터 생성
-
-2. 27 가지 데이터 생성
-
-    a. "요일" 데이터 삼각함수 변환
-
-    b. "일년 중 날짜"데이터 삼각함수 변환
-
-    c.  다음과 같은 열 생성
-
-    
-
-    'HDONG_CD' : 지역 코드  
-    'time' : 시간대("아침", "점심","저녁")    
-    'flow_pop' : 유동인구  
-    'card_use' : 카드사용량  
-    'holiday' : 공유일(1), 평일(0)  
-    'day_corona' : 코로나 신규 확진자 수  
-    'ondo' : 온도  
-    subdo' : 습도  
-    'rain_snow' : 강수량, 적설량    
-    'dayofyear_sin' :  1년 중 날짜의 sin성분      
-    'dayofyear_cos', : 1년 중 날짜의 cos성분    
-    'weekday_sin' : 요일의 sin 성분  
-    'weekday_cos': 요일의 cos 성분
-
-    
-
-    d.  "아침", "점심","저녁" 분리
-
-    e. 훈련, 검정, 평가 데이터 분리
-
-    f. 훈련 데이터로 Standard scaler 학습
-
-    g. 훈련, 검정, 평가 데이터 스케일링
-
-    h. 시계열 입력, 비 시계열 입력, 시계열 출력 3가지 종류의 데이터로 분리
-
-    
-
-3. trend 예측하기
-
-4. cycle 예측하기
-
-5.  결합하기
-
-6. size 복원하기
-
-7. 
-
+└── README.md   
